@@ -17,4 +17,25 @@ router.post(
   controller.create
 );
 
+router.patch(
+  "/:id",
+  middleware.verifyToken,
+  middleware.isAdmin,
+  upload.array("images", 5),
+  validators.updateProductValidations,
+  controller.update
+);
+
+router.get("/:id", controller.fetchById);
+
+router.delete(
+  "/:id",
+  middleware.verifyToken,
+  middleware.isAdmin,
+  controller.deleteOne
+);
+
+// Fetch all with filter
+router.get("/", controller.fetchAll);
+
 export default router;
