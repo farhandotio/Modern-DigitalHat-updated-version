@@ -36,7 +36,7 @@ const register = async (req, res) => {
       httpOnly: true,
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: none,
+      sameSite: "none",
     });
 
     return res.status(201).json({

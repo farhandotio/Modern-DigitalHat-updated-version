@@ -23,16 +23,27 @@ const productSchema = new mongoose.Schema(
     images: [
       {
         url: String,
-        thumbnail: String,
-        id: String,
+        thumbnailUrl: String,
+        fileId: String,
       },
     ],
     offer: {
       type: Number,
     },
-    category: {
+    offerDeadline: {
+      type: Date,
+      default: null,
+    },
+
+    productType: {
       type: String,
-      trim: true,
+      enum: ["Standard", "BestSeller", "FlashSale"],
+      default: "Standard",
+    },
+
+    category: {
+      name: { type: String, required: true, trim: true },
+      slug: { type: String, required: true, lowercase: true },
     },
     brand: {
       type: String,
@@ -42,11 +53,17 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isAffiliate: {
+      type: Boolean,
+      default: false,
+    },
+
     stock: {
       type: Number,
       min: 0,
       default: 0,
     },
+
     sold: {
       type: Number,
       min: 0,
