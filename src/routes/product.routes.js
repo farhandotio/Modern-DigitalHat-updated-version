@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post(
   "/",
-  middleware.verifyToken,
+  middleware.requireAuth,
   middleware.isAdmin,
   upload.array("images", 5),
   validators.createProductValidations,
@@ -19,7 +19,7 @@ router.post(
 
 router.patch(
   "/:id",
-  middleware.verifyToken,
+  middleware.requireAuth,
   middleware.isAdmin,
   upload.array("images", 5),
   validators.updateProductValidations,
@@ -30,7 +30,7 @@ router.get("/:id", controller.fetchById);
 
 router.delete(
   "/:id",
-  middleware.verifyToken,
+  middleware.requireAuth,
   middleware.isAdmin,
   controller.deleteOne
 );
