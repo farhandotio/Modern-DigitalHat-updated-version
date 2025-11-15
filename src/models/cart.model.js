@@ -4,7 +4,7 @@ const { Schema, model, Types } = mongoose;
 
 const CartItemSchema = new Schema(
   {
-    productId: { type: Types.ObjectId, ref: "Product", required: true },
+    productId: { type: Types.ObjectId, ref: "product", required: true },
     qty: { type: Number, required: true, min: 1, default: 1 },
   },
   { _id: false }
@@ -13,7 +13,7 @@ const CartItemSchema = new Schema(
 const CartSchema = new Schema(
   {
     // Logged-in cart
-    userId: { type: Types.ObjectId, ref: "User", default: null },
+    userId: { type: Types.ObjectId, ref: "user", default: null },
 
     // Guest cart (offline cart)
     anonId: { type: String, default: null, index: true },

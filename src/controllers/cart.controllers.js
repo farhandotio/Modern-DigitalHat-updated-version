@@ -67,6 +67,9 @@ const getCart = async (req, res) => {
       if (!userId) res.cookie("anonId", anonId, { httpOnly: true, path: "/" });
     }
 
+    // ✅ Populate product details including offer
+    await cart.populate("items.productId", "title image price offer");
+
     return res.json({ success: true, cart });
   } catch (err) {
     console.error("Get cart error:", err);

@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
     required: function () {
       return !this.googleId;
     },
-    select: false
+    select: false,
   },
   role: {
     type: String,
@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
     default: "user",
   },
   addresses: [addressShema],
+
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 const userModel = mongoose.model("user", userSchema);
