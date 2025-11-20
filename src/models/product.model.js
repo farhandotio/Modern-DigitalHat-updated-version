@@ -37,7 +37,7 @@ const productSchema = new mongoose.Schema(
 
     productType: {
       type: String,
-      enum: ["Standard", "BestSeller", "FlashSale"],
+      enum: ["Standard", "Featured", "HotDeals"],
       default: "Standard",
     },
 

@@ -64,7 +64,6 @@ async function create(req, res) {
       brand: brand || "",
       isActive: Boolean(isActive),
       stock: Number(stock) || 0,
-      // Internal fields managed automatically
       sold: 0,
       averageRating: 0,
       reviewCount: 0,
@@ -152,7 +151,7 @@ async function update(req, res) {
     }
 
     // ProductType update
-    const ALLOWED_PRODUCT_TYPES = ["Standard", "BestSeller", "FlashSale"];
+    const ALLOWED_PRODUCT_TYPES = ["Standard", "HotDeals", "Featured"];
     if (productType) {
       if (!ALLOWED_PRODUCT_TYPES.includes(productType))
         return res.status(400).json({
@@ -209,38 +208,95 @@ async function update(req, res) {
 }
 
 async function fetchAll(req, res) {
-  const { q, minprice, category, maxprice, skip = 0, limit = 20 } = req.query;
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      category,
+      sort,
+      minprice,
+      maxprice,
+      q,
+    } = req.query;
 
-  const filter = {};
+    const filter = {};
 
-  if (q) {
-    filter.$text = { $search: q };
+    if (q) filter.$text = { $search: q };
+
+    if (category) filter["category.slug"] = category.toLowerCase();
+
+    if (minprice)
+      filter["price.amount"] = {
+        ...filter["price.amount"],
+        $gte: Number(minprice),
+      };
+    if (maxprice)
+      filter["price.amount"] = {
+        ...filter["price.amount"],
+        $lte: Number(maxprice),
+      };
+
+    let query = productModel.find(filter);
+
+    // Sorting
+    if (sort) {
+      const sortObj = {};
+      if (sort === "price") sortObj["price.amount"] = 1;
+      else if (sort === "-price") sortObj["price.amount"] = -1;
+      else if (sort === "newest") sortObj["createdAt"] = -1;
+      query = query.sort(sortObj);
+    } else {
+      query = query.sort({ createdAt: -1 });
+    }
+
+    // Pagination
+    const skip = (Number(page) - 1) * Number(limit);
+    const total = await productModel.countDocuments(filter);
+    const products = await query.skip(skip).limit(Number(limit));
+
+    return res.status(200).json({ success: true, data: products, total });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
+}
 
-  if (minprice) {
-    filter["price.amount"] = {
-      ...filter["price.amount"],
-      $gte: Number(minprice),
-    };
+async function fetchCategories(req, res) {
+  try {
+    const categories = await productModel.aggregate([
+      {
+        $match: {
+          "category.slug": { $exists: true, $ne: "" },
+        },
+      },
+      {
+        $group: {
+          _id: "$category.slug",
+          slug: { $first: "$category.slug" },
+          name: { $first: "$category.name" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          slug: 1,
+          name: 1,
+        },
+      },
+      { $sort: { name: 1 } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: categories,
+    });
+  } catch (err) {
+    console.error("Fetch categories error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching categories",
+    });
   }
-
-  if (maxprice) {
-    filter["price.amount"] = {
-      ...filter["price.amount"],
-      $lte: Number(maxprice),
-    };
-  }
-
-  if (category) {
-    filter["category.slug"] = category.toLowerCase();
-  }
-
-  const products = await productModel
-    .find(filter)
-    .skip(Number(skip))
-    .limit(Number(limit), 20);
-
-  return res.status(200).json({ data: products });
 }
 
 async function fetchById(req, res) {
@@ -280,4 +336,4 @@ async function deleteOne(req, res) {
   }
 }
 
-export { create, fetchAll, fetchById, update, deleteOne };
+export { create, fetchAll, fetchById, update, deleteOne, fetchCategories };

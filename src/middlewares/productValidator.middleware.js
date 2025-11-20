@@ -68,10 +68,8 @@ const createProductValidations = [
   // productType
   body("productType")
     .optional()
-    .isIn(["Standard", "BestSeller", "FlashSale"])
-    .withMessage(
-      "productType must be one of: Standard, BestSeller, FlashSale."
-    ),
+    .isIn(["Standard", "HotDeals", "Featured"])
+    .withMessage("productType must be one of: Standard, HotDeals, Featured."),
 
   // isAffiliate
   body("isAffiliate")
@@ -194,10 +192,8 @@ const updateProductValidations = [
   // productType
   body("productType")
     .optional()
-    .isIn(["Standard", "BestSeller", "FlashSale"])
-    .withMessage(
-      "productType must be one of: Standard, BestSeller, FlashSale."
-    ),
+    .isIn(["Standard", "HotDeals", "Featured"])
+    .withMessage("productType must be one of: Standard, HotDeals, Featured."),
 
   // isAffiliate
   body("isAffiliate")

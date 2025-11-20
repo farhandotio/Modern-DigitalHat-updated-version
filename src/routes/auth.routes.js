@@ -45,8 +45,4 @@ router.delete(
   controller.deleteAddress
 );
 
-// Forget Password
-router.post("/forgot-password", controller.requestPasswordReset);
-router.post("/reset-password", controller.resetPassword);
-
 export default router;

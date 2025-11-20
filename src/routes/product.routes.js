@@ -26,6 +26,9 @@ router.patch(
   controller.update
 );
 
+router.get("/categories", controller.fetchCategories);
+
+// Fetch by ID after
 router.get("/:id", controller.fetchById);
 
 router.delete(

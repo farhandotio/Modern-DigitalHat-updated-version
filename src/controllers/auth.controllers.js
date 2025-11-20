@@ -2,8 +2,6 @@
 import userModel from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
-import sendEmail from "../utils/sendEmail.js";
 
 /** REGISTER */
 const register = async (req, res) => {
@@ -301,82 +299,6 @@ const deleteAddress = async (req, res) => {
   }
 };
 
-/** FORGOT - password */
-const requestPasswordReset = async (req, res) => {
-  try {
-    // Email can come from query param or body
-    const email = req.query.email || req.body.email;
-
-    if (!email) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email is required" });
-    }
-
-    const user = await userModel.findOne({ email });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    // generate token & expiry
-    const token = crypto.randomBytes(32).toString("hex");
-    user.passwordResetToken = token;
-    user.passwordResetExpires = Date.now() + 3600000; // 1 hour
-    await user.save();
-
-    // send email
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-    await sendEmail({
-      to: user.email,
-      subject: "Reset Password",
-      text: `Click here: ${resetUrl}`,
-    });
-
-    res.json({ success: true, message: "Password reset email sent" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-};
-
-const resetPassword = async (req, res) => {
-  try {
-    const { token, newPassword } = req.body;
-    if (!token || !newPassword) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Token and new password required" });
-    }
-
-    // find user by token & check expiry
-    const user = await userModel
-      .findOne({
-        passwordResetToken: token,
-        passwordResetExpires: { $gt: Date.now() },
-      })
-      .select("+password");
-
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid or expired token" });
-    }
-
-    // hash new password & save
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save();
-
-    res.json({ success: true, message: "Password updated successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-};
-
 export {
   register,
   login,
@@ -388,6 +310,4 @@ export {
   getAddresses,
   addAddress,
   deleteAddress,
-  requestPasswordReset,
-  resetPassword,
 };
